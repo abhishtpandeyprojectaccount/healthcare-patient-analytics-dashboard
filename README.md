@@ -2,6 +2,8 @@
 
 An executive dashboard built in Python (Jupyter Notebook) that analyzes patient, admission, insurance, and billing data across a multi-hospital network from 2019 to 2024.
 
+Dashboard Preview 
+
 ![Dashboard Overview](images/01_dashboard_overview.png)
 
 ## 📌 Project Overview
