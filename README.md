@@ -3,12 +3,9 @@
 An executive dashboard built in Python (Jupyter Notebook) that analyzes patient, admission, insurance, and billing data across a multi-hospital network from 2019 to 2024.
 
 Dashboard Preview 
-
-![Dashboard Overview](images/01_dashboard_overview.png)
-
 ![Dashboard Overview](01_dashboard_overview.png)
-![Age and Admission](images/02_age_and_admission_charts.png)
-![Condition and Cost Trends](images/03_condition_and_cost_trends.png)
+![Age and Admission](02_age_and_admission_charts.png)
+![Condition and Cost Trends](03_condition_and_cost_trends.png)
 
 ## 📌 Project Overview
 This project explores healthcare records to uncover patterns in patient volume, admission types, demographics, and treatment costs. It includes interactive filters and KPI cards designed for executive-level reporting.
