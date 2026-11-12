@@ -1,0 +1,91 @@
+I am uploading a Jupyter Notebook containing a completed Healthcare Data Analytics project.
+IMPORTANT:
+Do NOT convert the notebook into an interactive report or documentation page.
+Instead, use the notebook ONLY as the source of data, analysis, results, and insights to build a PROFESSIONAL EXECUTIVE DASHBOARD for hospital upper management.
+The management user should NOT see:
+- Data loading
+- Data inspection
+- Data cleaning
+- Python code
+- Technical explanations
+- Notebook workflow
+- Analysis methodology
+All of that should remain hidden. Extract only the final business-relevant information.
+Create ONE self-contained, interactive HTML dashboard.
+DASHBOARD STRUCTURE:
+1. HEADER
+- Hospital/Healthcare Analytics title
+- Reporting period if available
+- Short executive-level description
+2. KPI CARDS
+Extract the most important overall metrics from the notebook, such as:
+- Total Patients/Admissions
+- Total Billing/Revenue
+- Average Billing
+- Insurance/Patient metrics
+- Other meaningful KPIs supported by the data
+Do not invent KPIs.
+3. EXECUTIVE SUMMARY
+Create 4–6 concise management-level insights from the analysis.
+Each insight should answer:
+"What does management need to know?"
+4. KEY BUSINESS INSIGHTS
+Use the 5 Business Questions from the notebook.
+DO NOT display the questions as notebook-style cards.
+Instead, convert their results into:
+- Important charts
+- KPI cards
+- Short findings
+- Business implications
+Example:
+"Cardiology generated the highest average billing amount."
+Then show the relevant chart supporting that finding.
+5. AD-HOC INSIGHTS
+Use the 3 ad-hoc analyses from the notebook.
+Present them as additional management insights, not as technical analysis sections.
+6. MANAGEMENT TAKEAWAYS
+Create a final section containing the most important actionable findings.
+Focus on:
+- What is happening?
+- Why does it matter?
+- What should management pay attention to?
+INTERACTIVITY:
+Include useful dashboard interactions such as:
+- Department filter
+- Medical condition filter
+- Insurance provider filter
+- Gender filter
+- Date/year filter if applicable
+- Interactive charts
+- Hover tooltips
+- Dynamic KPI updates
+- Reset Filters button
+Only create filters based on columns that actually exist in the notebook.
+DESIGN:
+Make it look like a modern professional healthcare BI dashboard similar to what an executive would see in Power BI/Tableau.
+Use:
+- Clean dashboard layout
+- KPI cards
+- Interactive charts
+- Minimal text
+- Clear hierarchy
+- Professional healthcare visual design
+- Responsive layout
+- Consistent typography
+- Plenty of whitespace
+IMPORTANT:
+The dashboard is NOT an educational page.
+Do NOT include:
+❌ Navigation for Data Loading / Inspection / Cleaning
+❌ Python code
+❌ "How to use this report"
+❌ Analysis workflow
+❌ Technical explanations
+❌ Code copy buttons
+❌ Notebook sections
+❌ Long descriptions
+The dashboard should answer one question:
+"After analyzing this healthcare data, what does upper management need to know?"
+Use ONLY the actual data, results, and insights present in the uploaded notebook.
+Do not invent data, results, or conclusions.
+Generate the final result as a single self-contained HTML file that can be opened directly in a browser.

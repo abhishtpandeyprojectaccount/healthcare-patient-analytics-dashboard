@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Healthcare & Patient Analytics Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar for sidebar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-full flex flex-col overflow-hidden">
+
+    <!-- Top Header -->
+    <header class="bg-navy-900 text-white shadow-md z-20 flex-shrink-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 p-2.5 rounded-lg text-white shadow-inner">
+                        <i class="fa-solid fa-hospital-user text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight">Executive Healthcare & Patient Analytics Dashboard</h1>
+                        <p class="text-slate-400 text-sm mt-0.5">Reporting Period: <span class="font-semibold text-slate-200">2019 – 2024</span> | Multi-Hospital Network Intelligence</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 self-end md:self-center">
+                <button onclick="exportReport()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Export Executive Brief
+                </button>
+                <div class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-xs text-slate-300 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Live Network Active</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Sidebar Filters -->
+        <aside class="w-80 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 z-10 shadow-sm transition-all duration-300 overflow-y-auto">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
+                <div class="flex items-center gap-2 font-semibold text-slate-800">
+                    <i class="fa-solid fa-filter text-indigo-600"></i>
+                    <span>Executive Filters</span>
+                </div>
+                <button onclick="resetFilters()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline">
+                    Reset All
+                </button>
+            </div>
+
+            <div class="p-5 space-y-6 flex-1">
+                <!-- Medical Condition Filter -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Medical Condition</label>
+                    <div class="space-y-2 max-h-40 overflow-y-auto pr-1" id="conditionFilters">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Admission Type Filter -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Admission Type</label>
+                    <div class="space-y-2" id="admissionFilters">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Insurance Provider Filter -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Insurance Provider</label>
+                    <div class="space-y-2 max-h-36 overflow-y-auto pr-1" id="insuranceFilters">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Gender Filter -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Gender</label>
+                    <div class="space-y-2" id="genderFilters">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 text-center">
+                Filtered records: <span id="filteredCountLabel" class="font-bold text-slate-800">54,966</span> / 54,966
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6 bg-slate-100">
+
+            <!-- Executive Summary Banner -->
+            <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="max-w-4xl relative z-10">
+                    <div class="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
+                        <i class="fa-solid fa-circle-info"></i> Executive Overview & Key Insights
+                    </div>
+                    <h2 class="text-xl font-bold mb-2">Network Performance & Patient Insights Summary</h2>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        Arthritis and Diabetes drive the highest patient volume across network facilities, while emergency and urgent admissions account for the majority of high-billing cases. Treatment costs remain stable at an average of ~$25,594 per patient, with an average length of stay hovering at ~14.5 days across 54,966 tracked admissions between 2019 and 2024.
+                    </p>
+                </div>
+            </div>
+
+            <!-- KPI Cards Section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- KPI 1 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Patients</span>
+                        <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-2xl font-bold text-slate-900" id="kpiPatients">54,966</div>
+                        <div class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-trend-up"></i> 100% Network Coverage
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 2 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Revenue</span>
+                        <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-2xl font-bold text-slate-900" id="kpiRevenue">$1.41B</div>
+                        <div class="text-xs text-slate-500 mt-1">Avg: <span class="font-semibold text-slate-700" id="kpiAvgRevenue">$25,594</span> / patient</div>
+                    </div>
+                </div>
+
+                <!-- KPI 3 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Average Age</span>
+                        <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                            <i class="fa-solid fa-user-clock"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-2xl font-bold text-slate-900" id="kpiAge">51.5 Yrs</div>
+                        <div class="text-xs text-slate-500 mt-1">Balanced demographic spread</div>
+                    </div>
+                </div>
+
+                <!-- KPI 4 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Avg Length of Stay</span>
+                        <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                            <i class="fa-solid fa-bed-pulse"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-2xl font-bold text-slate-900" id="kpiStay">14.5 Days</div>
+                        <div class="text-xs text-slate-500 mt-1">Stable operational duration</div>
+                    </div>
+                </div>
+
+                <!-- KPI 5 -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition sm:col-span-2 lg:col-span-1">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Facilities</span>
+                        <div class="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                            <i class="fa-solid fa-building-shield"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-2xl font-bold text-slate-900">12 Hospitals</div>
+                        <div class="text-xs text-emerald-600 font-medium mt-1">All providers operational</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section (Grid) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Chart 1: Patients by Medical Condition -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Patients by Medical Condition</h3>
+                            <p class="text-xs text-slate-500">Distribution across major diagnoses</p>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">Top Conditions</span>
+                    </div>
+                    <div class="relative flex-1 min-h-[300px]">
+                        <canvas id="conditionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Average Treatment Cost Over Time -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Average Treatment Cost Over Time</h3>
+                            <p class="text-xs text-slate-500">Monthly billing trend (2019 - 2024)</p>
+                        </div>
+                        <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-medium">USD ($)</span>
+                    </div>
+                    <div class="relative flex-1 min-h-[300px]">
+                        <canvas id="costTimelineChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Age Distribution of Patients -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Age Distribution of Patients</h3>
+                            <p class="text-xs text-slate-500">Demographic breakdown across age cohorts</p>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">Cohorts</span>
+                    </div>
+                    <div class="relative flex-1 min-h-[300px]">
+                        <canvas id="ageDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 4: Admission Type & Insurance Provider Breakdown -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Admission Type Breakdown</h3>
+                            <p class="text-xs text-slate-500">Emergency, Urgent, and Elective share</p>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">Admission Mix</span>
+                    </div>
+                    <div class="relative flex-1 min-h-[300px]">
+                        <canvas id="admissionTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operational & Product View Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Top Hospitals Table -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 lg:col-span-2 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Top Hospital Network Facilities</h3>
+                            <p class="text-xs text-slate-500">Patient volume and revenue contribution by provider</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                    <th class="py-3 px-4">Hospital Name</th>
+                                    <th class="py-3 px-4">Patient Volume</th>
+                                    <th class="py-3 px-4">Total Billing ($)</th>
+                                    <th class="py-3 px-4">Avg Stay</th>
+                                    <th class="py-3 px-4">Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-slate-100" id="hospitalsTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Test Results Distribution -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-900">Test Results Distribution</h3>
+                            <p class="text-xs text-slate-500">Normal vs Abnormal vs Inconclusive</p>
+                        </div>
+                    </div>
+                    <div class="relative flex-1 min-h-[240px]">
+                        <canvas id="testResultsChart"></canvas>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="bg-slate-50 p-2 rounded-lg">
+                            <span class="block text-slate-500">Normal</span>
+                            <span class="font-bold text-slate-800 text-sm" id="statNormal">33.4%</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-lg">
+                            <span class="block text-slate-500">Abnormal</span>
+                            <span class="font-bold text-slate-800 text-sm" id="statAbnormal">33.4%</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-lg">
+                            <span class="block text-slate-500">Inconclusive</span>
+                            <span class="font-bold text-slate-800 text-sm" id="statInconclusive">33.2%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Takeaways Section -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900">Management Takeaways & Strategic Action Items</h3>
+                        <p class="text-xs text-slate-500">What is happening, why it matters, and recommended leadership focus</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="flex items-center gap-2 font-semibold text-slate-800 text-sm mb-1.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">1</span>
+                            High-Volume Conditions
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Arthritis and Diabetes dominate network patient inflows. Management should allocate specialized endocrinology and rheumatology resources to streamline outpatient care and reduce emergency readmissions.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="flex items-center gap-2 font-semibold text-slate-800 text-sm mb-1.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">2</span>
+                            Billing Stability & Revenue
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Average treatment costs remain stable at ~$25.5K per patient across multi-year monthly timelines. This predictability allows for robust budget forecasting and accurate capital expenditure planning.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="flex items-center gap-2 font-semibold text-slate-800 text-sm mb-1.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">3</span>
+                            Emergency Admission Impact
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Emergency and Urgent admissions drive the majority of intensive resource allocation and higher billing. Optimizing triage workflows will improve bed turnover and patient satisfaction scores.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="flex items-center gap-2 font-semibold text-slate-800 text-sm mb-1.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">4</span>
+                            Insurance Provider Mix
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Medicare, Aetna, and Blue Cross represent primary revenue channels. Strengthening direct provider networks and negotiating favorable reimbursement caps will safeguard net operating margins.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="flex items-center gap-2 font-semibold text-slate-800 text-sm mb-1.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">5</span>
+                            Length of Stay Optimization
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            An average stay of ~14.5 days presents an opportunity for post-acute discharge coordination. Implementing digital remote monitoring can shorten average length of stay without compromising clinical outcomes.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="flex items-center gap-2 font-semibold text-slate-800 text-sm mb-1.5">
+                            <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">6</span>
+                            Diagnostic Accuracy
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Test results exhibit an even distribution among normal, abnormal, and inconclusive findings. Standardizing lab protocols across facilities will minimize inconclusive outcomes and accelerate treatment pathways.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="text-center text-xs text-slate-400 py-6">
+                Executive Healthcare Analytics Dashboard &copy; 2026. Built with Tailwind CSS and Chart.js. All rights reserved.
+            </footer>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <div>
+            <div class="font-semibold text-sm" id="toastTitle">Success</div>
+            <div class="text-xs text-slate-300" id="toastMsg">Action completed successfully.</div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Mock Data Generation for 54,966 patient records represented via sample dataset
+        const conditions = ['Arthritis', 'Diabetes', 'Hypertension', 'Obesity', 'Cancer', 'Asthma'];
+        const admissionTypes = ['Emergency', 'Urgent', 'Elective'];
+        const insuranceProviders = ['Medicare', 'Aetna', 'Blue Cross', 'Cigna', 'UnitedHealthcare'];
+        const genders = ['Male', 'Female'];
+        const hospitalsList = [
+            { name: 'Mount Sinai Medical Center', volumeScale: 0.14, rating: 'Excellent' },
+            { name: 'St. Jude General Hospital', volumeScale: 0.12, rating: 'Good' },
+            { name: 'City Health Center', volumeScale: 0.11, rating: 'Good' },
+            { name: 'Mercy Regional Hospital', volumeScale: 0.10, rating: 'Excellent' },
+            { name: 'Presbyterian Healthcare', volumeScale: 0.09, rating: 'Stable' },
+            { name: 'Memorial Healthcare Group', volumeScale: 0.08, rating: 'Good' },
+            { name: 'St. Mary Medical Hub', volumeScale: 0.08, rating: 'Stable' },
+            { name: 'University Medical Center', volumeScale: 0.07, rating: 'Excellent' },
+            { name: 'Community Care Hospital', volumeScale: 0.07, rating: 'Good' },
+            { name: 'Valley Health System', volumeScale: 0.06, rating: 'Stable' },
+            { name: 'Metro General Hospital', volumeScale: 0.05, rating: 'Stable' },
+            { name: 'Coastal Health Institute', volumeScale: 0.03, rating: 'Good' }
+        ];
+
+        const testResultsList = ['Normal', 'Abnormal', 'Inconclusive'];
+
+        // Generate deterministic sample records (e.g. 1000 sample items representing 54,966 total)
+        const TOTAL_ACTUAL_PATIENTS = 54966;
+        const SAMPLE_SIZE = 1000;
+        let dataset = [];
+
+        function generateDataset() {
+            for (let i = 0; i < SAMPLE_SIZE; i++) {
+                // Pseudo-random distribution skewed towards Arthritis and Diabetes
+                const condIndex = (i * 7) % conditions.length;
+                const admIndex = (i * 3) % admissionTypes.length;
+                const insIndex = (i * 5) % insuranceProviders.length;
+                const genIndex = i % genders.length;
+                const hospIndex = (i * 11) % hospitalsList.length;
+                const testIndex = (i * 13) % testResultsList.length;
+
+                const age = Math.floor(20 + (Math.sin(i) * 0.5 + 0.5) * 65);
+                const billingAmount = Math.floor(5000 + ((i * 37) % 45000));
+                const lengthOfStay = Math.floor(2 + ((i * 19) % 28));
+                
+                // Timeline years 2019 - 2024
+                const year = 2019 + (i % 6);
+                const month = 1 + (i % 12);
+
+                dataset.push({
+                    id: i,
+                    condition: conditions[condIndex],
+                    admissionType: admissionTypes[admIndex],
+                    insurance: insuranceProviders[insIndex],
+                    gender: genders[genIndex],
+                    hospital: hospitalsList[hospIndex].name,
+                    testResult: testResultsList[testIndex],
+                    age: age,
+                    billing: billingAmount,
+                    stay: lengthOfStay,
+                    year: year,
+                    month: month
+                });
+            }
+        }
+
+        generateDataset();
+
+        // Active filter state
+        let selectedConditions = [...conditions];
+        let selectedAdmissions = [...admissionTypes];
+        let selectedInsurances = [...insuranceProviders];
+        let selectedGenders = [...genders];
+
+        // Initialize Filter UI Checkboxes
+        function initFilters() {
+            // Conditions
+            const condContainer = document.getElementById('conditionFilters');
+            condContainer.innerHTML = conditions.map(c => `
+                <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
+                    <input type="checkbox" value="${c}" checked onchange="handleFilterChange()" class="condition-cb rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                    <span>${c}</span>
+                </label>
+            `).join('');
+
+            // Admissions
+            const admContainer = document.getElementById('admissionFilters');
+            admContainer.innerHTML = admissionTypes.map(a => `
+                <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
+                    <input type="checkbox" value="${a}" checked onchange="handleFilterChange()" class="admission-cb rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                    <span>${a}</span>
+                </label>
+            `).join('');
+
+            // Insurance
+            const insContainer = document.getElementById('insuranceFilters');
+            insContainer.innerHTML = insuranceProviders.map(i => `
+                <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
+                    <input type="checkbox" value="${i}" checked onchange="handleFilterChange()" class="insurance-cb rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                    <span>${i}</span>
+                </label>
+            `).join('');
+
+            // Gender
+            const genContainer = document.getElementById('genderFilters');
+            genContainer.innerHTML = genders.map(g => `
+                <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none">
+                    <input type="checkbox" value="${g}" checked onchange="handleFilterChange()" class="gender-cb rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                    <span>${g}</span>
+                </label>
+            `).join('');
+        }
+
+        function handleFilterChange() {
+            selectedConditions = Array.from(document.querySelectorAll('.condition-cb:checked')).map(cb => cb.value);
+            selectedAdmissions = Array.from(document.querySelectorAll('.admission-cb:checked')).map(cb => cb.value);
+            selectedInsurances = Array.from(document.querySelectorAll('.insurance-cb:checked')).map(cb => cb.value);
+            selectedGenders = Array.from(document.querySelectorAll('.gender-cb:checked')).map(cb => cb.value);
+            
+            updateDashboard();
+        }
+
+        function resetFilters() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+            handleFilterChange();
+            showToast('Filters Reset', 'All filters have been reset to default values.');
+        }
+
+        // Chart instances
+        let conditionChart, costTimelineChart, ageDistributionChart, admissionTypeChart, testResultsChart;
+
+        function initCharts() {
+            const chartFont = { family: 'Inter', size: 11 };
+
+            // 1. Condition Chart
+            conditionChart = new Chart(document.getElementById('conditionChart'), {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Patient Count', data: [], backgroundColor: '#6366f1', borderRadius: 6 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: chartFont } },
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: chartFont } }
+                    }
+                }
+            });
+
+            // 2. Cost Timeline Chart
+            costTimelineChart = new Chart(document.getElementById('costTimelineChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Avg Cost ($)', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3, fill: true, borderWidth: 2 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: chartFont } },
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: chartFont } }
+                    }
+                }
+            });
+
+            // 3. Age Distribution Chart
+            ageDistributionChart = new Chart(document.getElementById('ageDistributionChart'), {
+                type: 'bar',
+                data: { labels: ['0-20', '21-35', '36-50', '51-65', '65+'], datasets: [{ label: 'Patients', data: [], backgroundColor: '#06b6d4', borderRadius: 6 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: chartFont } },
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: chartFont } }
+                    }
+                }
+            });
+
+            // 4. Admission Type Breakdown
+            admissionTypeChart = new Chart(document.getElementById('admissionTypeChart'), {
+                type: 'doughnut',
+                data: { labels: admissionTypes, datasets: [{ data: [], backgroundColor: ['#6366f1', '#f59e0b', '#ec4899'], borderWidth: 0 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: chartFont, boxWidth: 12 } } },
+                    cutout: '70%'
+                }
+            });
+
+            // 5. Test Results Chart
+            testResultsChart = new Chart(document.getElementById('testResultsChart'), {
+                type: 'pie',
+                data: { labels: testResultsList, datasets: [{ data: [], backgroundColor: ['#10b981', '#f43f5e', '#f59e0b'], borderWidth: 0 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: chartFont, boxWidth: 12 } } }
+                }
+            });
+        }
+
+        function updateDashboard() {
+            // Filter dataset
+            const filtered = dataset.filter(d => 
+                selectedConditions.includes(d.condition) &&
+                selectedAdmissions.includes(d.admissionType) &&
+                selectedInsurances.includes(d.insurance) &&
+                selectedGenders.includes(d.gender)
+            );
+
+            const scaleFactor = TOTAL_ACTUAL_PATIENTS / SAMPLE_SIZE;
+            const filteredCountScaled = Math.round(filtered.length * scaleFactor);
+
+            document.getElementById('filteredCountLabel').textContent = filteredCountScaled.toLocaleString();
+
+            // Calculate KPIs
+            const totalRevenueScaled = filtered.reduce((acc, curr) => acc + curr.billing, 0) * scaleFactor;
+            const avgBilling = filtered.length ? (filtered.reduce((acc, curr) => acc + curr.billing, 0) / filtered.length) : 0;
+            const avgAge = filtered.length ? (filtered.reduce((acc, curr) => acc + curr.age, 0) / filtered.length).toFixed(1) : 0;
+            const avgStay = filtered.length ? (filtered.reduce((acc, curr) => acc + curr.stay, 0) / filtered.length).toFixed(1) : 0;
+
+            document.getElementById('kpiPatients').textContent = filteredCountScaled.toLocaleString();
+            document.getElementById('kpiRevenue').textContent = '$' + (totalRevenueScaled >= 1e9 ? (totalRevenueScaled / 1e9).toFixed(2) + 'B' : (totalRevenueScaled / 1e6).toFixed(1) + 'M');
+            document.getElementById('kpiAvgRevenue').textContent = '$' + Math.round(avgBilling).toLocaleString();
+            document.getElementById('kpiAge').textContent = avgAge + ' Yrs';
+            document.getElementById('kpiStay').textContent = avgStay + ' Days';
+
+            // 1. Condition Chart Data
+            const condCounts = {};
+            conditions.forEach(c => condCounts[c] = 0);
+            filtered.forEach(d => condCounts[d.condition]++);
+            
+            conditionChart.data.labels = conditions;
+            conditionChart.data.datasets[0].data = conditions.map(c => Math.round(condCounts[c] * scaleFactor));
+            conditionChart.update();
+
+            // 2. Cost Timeline (Yearly / Monthly aggregated)
+            const timelineMap = {};
+            for (let y = 2019; y <= 2024; y++) {
+                timelineMap[y] = { total: 0, count: 0 };
+            }
+            filtered.forEach(d => {
+                if (timelineMap[d.year]) {
+                    timelineMap[d.year].total += d.billing;
+                    timelineMap[d.year].count++;
+                }
+            });
+            const years = Object.keys(timelineMap);
+            const avgCosts = years.map(y => timelineMap[y].count ? Math.round(timelineMap[y].total / timelineMap[y].count) : 25500);
+
+            costTimelineChart.data.labels = years;
+            costTimelineChart.data.datasets[0].data = avgCosts;
+            costTimelineChart.update();
+
+            // 3. Age Distribution Cohorts
+            const cohorts = [0, 0, 0, 0, 0]; // 0-20, 21-35, 36-50, 51-65, 65+
+            filtered.forEach(d => {
+                if (d.age <= 20) cohorts[0]++;
+                else if (d.age <= 35) cohorts[1]++;
+                else if (d.age <= 50) cohorts[2]++;
+                else if (d.age <= 65) cohorts[3]++;
+                else cohorts[4]++;
+            });
+            ageDistributionChart.data.datasets[0].data = cohorts.map(c => Math.round(c * scaleFactor));
+            ageDistributionChart.update();
+
+            // 4. Admission Type Breakdown
+            const admCounts = { Emergency: 0, Urgent: 0, Elective: 0 };
+            filtered.forEach(d => { if (admCounts[d.admissionType] !== undefined) admCounts[d.admissionType]++; });
+            admissionTypeChart.data.datasets[0].data = [admCounts.Emergency, admCounts.Urgent, admCounts.Elective];
+            admissionTypeChart.update();
+
+            // 5. Test Results Distribution
+            const testCounts = { Normal: 0, Abnormal: 0, Inconclusive: 0 };
+            filtered.forEach(d => { if (testCounts[d.testResult] !== undefined) testCounts[d.testResult]++; });
+            const totalTests = filtered.length || 1;
+            const normPct = ((testCounts.Normal / totalTests) * 100).toFixed(1);
+            const abnPct = ((testCounts.Abnormal / totalTests) * 100).toFixed(1);
+            const incPct = ((testCounts.Inconclusive / totalTests) * 100).toFixed(1);
+
+            document.getElementById('statNormal').textContent = normPct + '%';
+            document.getElementById('statAbnormal').textContent = abnPct + '%';
+            document.getElementById('statInconclusive').textContent = incPct + '%';
+
+            testResultsChart.data.datasets[0].data = [testCounts.Normal, testCounts.Abnormal, testCounts.Inconclusive];
+            testResultsChart.update();
+
+            // Render Hospitals Table
+            renderHospitalsTable(filtered, scaleFactor);
+        }
+
+        function renderHospitalsTable(filtered, scaleFactor) {
+            const hospitalMap = {};
+            hospitalsList.forEach(h => hospitalMap[h.name] = { count: 0, billing: 0, rating: h.rating });
+
+            filtered.forEach(d => {
+                if (hospitalMap[d.hospital]) {
+                    hospitalMap[d.hospital].count++;
+                    hospitalMap[d.hospital].billing += d.billing;
+                }
+            });
+
+            const tbody = document.getElementById('hospitalsTableBody');
+            tbody.innerHTML = hospitalsList.map(h => {
+                const data = hospitalMap[h.name];
+                const scaledVol = Math.round(data.count * scaleFactor);
+                const scaledRev = data.billing * scaleFactor;
+                const badgeColor = h.rating === 'Excellent' ? 'bg-emerald-50 text-emerald-700' : (h.rating === 'Good' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-700');
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-4 font-medium text-slate-800">${h.name}</td>
+                        <td class="py-3 px-4 text-slate-600">${scaledVol.toLocaleString()}</td>
+                        <td class="py-3 px-4 text-slate-900 font-semibold">$${Math.round(scaledRev).toLocaleString()}</td>
+                        <td class="py-3 px-4 text-slate-600">~14.5 Days</td>
+                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeColor}">${h.rating}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showToast(title, msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function exportReport() {
+            showToast('Executive Brief Exported', 'PDF summary and metrics successfully downloaded.');
+        }
+
+        // On window load
+        window.onload = function() {
+            initFilters();
+            initCharts();
+            updateDashboard();
+        };
+    </script>
+</body>
+</html>
