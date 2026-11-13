@@ -43,14 +43,23 @@ prompts/     → prompt used to build the project
 images/      → screenshots
 ```
 
-## ▶️ How to Run
-```bash
-git clone https://github.com/<your-username>/healthcare-patient-analytics-dashboard.git
-cd healthcare-patient-analytics-dashboard
-pip install -r requirements.txt
-jupyter notebook notebooks/healthcare_analytics_dashboard.ipynb
-```
+## How to Use
 
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/healthcare-patient-analytics-dashboard.git
+   cd healthcare-patient-analytics-dashboard
+   ```
+2. Install the required libraries:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Open the notebook:
+   ```bash
+   jupyter notebook notebooks/healthcare_analytics_dashboard.ipynb
+   ```
+4. Run all cells from top to bottom.
+   
 ## ⚠️ Known Limitations
 - The dataset appears to be synthetic, so findings should not be treated as real clinical insights.
 
